@@ -1,0 +1,253 @@
+Football Leaugue Assignment 
+
+Question 1 :
+
+
+Create the following Table
+
+FootBallLeague (MatchID (PK), TeamName1, TeamName2, Status, WinningTeam, Points)
+
+Status should be either “Win” or “Draw”
+
+Insert at least 8 records in the table
+
+MatchId TeamName1 TeamName2 Status Winning Team Points
+
+1001 Italy France Win France 4
+
+1002 Brazil Portugal Draw (null) 2
+
+1003 England Japan Win England 4
+
+1004 USA Russia Win Russia 4
+
+1005 Portugal Italy Draw (null) 2
+
+1006 Brazil France Win Brazil 4
+
+1007 England Russia Win Russia 4
+
+1008 Japan USA Draw (null) 2
+
+Create a stored procedure to insert the records in FootBallLeague table.
+
+Solve any two queries from below
+
+a. Retrieve all the winning TeamNames.
+
+b. Create View Match_View to display the teams whose status is Draw
+
+c. Retrieve the details of all matches in which Japan played
+
+
+ANSWER
+
+
+C#
+
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ADO_LINQ_EF_Assignments1
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            //InsertRecord(1008, "Japan", "USA", "Draw","NULL", 2);
+            //winningTeam();
+            matchPlayedJapan();
+            //showData();
+
+            Console.ReadKey();
+        }
+        public static void InsertRecord(int id,string team1,string team2,string status,
+            string winningteam,int points)
+        {
+            String connectionstring = "Data Source=LAPTOP-1FO27VB7\\SQLEXPRESS;Initial Catalog=Football_League;Integrated Security=True;";
+            try
+            {
+                using(SqlConnection con = new SqlConnection(connectionstring))
+                {
+                    SqlCommand cmd = new SqlCommand();
+                    cmd.Connection = con;
+                    cmd.CommandText = "sp_InsertRecord";
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    SqlParameter parmeter1 = new SqlParameter();
+                    parmeter1.ParameterName = "@id";
+                    parmeter1.SqlDbType = SqlDbType.Int;
+                    parmeter1.Direction = ParameterDirection.Input;
+                    parmeter1.Value = id;
+
+                    SqlParameter parmeter2 = new SqlParameter();
+                    parmeter2.ParameterName = "@team1";
+                    parmeter2.SqlDbType = SqlDbType.VarChar;
+                    parmeter2.Direction = ParameterDirection.Input;
+                    parmeter2.Value = team1;
+
+                    SqlParameter parmeter3 = new SqlParameter();
+                    parmeter3.ParameterName = "@team2";
+                    parmeter3.SqlDbType = SqlDbType.VarChar;
+                    parmeter3.Direction = ParameterDirection.Input;
+                    parmeter3.Value = team2;
+
+                    SqlParameter parmeter4 = new SqlParameter();
+                    parmeter4.ParameterName = "@status";
+                    parmeter4.SqlDbType = SqlDbType.VarChar;
+                    parmeter4.Direction = ParameterDirection.Input;
+                    parmeter4.Value = status;
+
+                    SqlParameter parmeter5 = new SqlParameter();
+                    parmeter5.ParameterName = "@winningteam";
+                    parmeter5.SqlDbType = SqlDbType.VarChar;
+                    parmeter5.Direction = ParameterDirection.Input;
+                    if (winningteam.ToLower() == "null")
+                        parmeter5.Value = DBNull.Value;
+                    else
+                        parmeter5.Value = winningteam;
+
+                    SqlParameter parmeter6 = new SqlParameter();
+                    parmeter6.ParameterName = "@points";
+                    parmeter6.SqlDbType = SqlDbType.Int;
+                    parmeter6.Direction = ParameterDirection.Input;
+                    parmeter6.Value = points;
+
+                    cmd.Parameters.Add(parmeter1);
+                    cmd.Parameters.Add(parmeter2);
+                    cmd.Parameters.Add(parmeter3);
+                    cmd.Parameters.Add(parmeter4);
+                    cmd.Parameters.Add(parmeter5);
+                    cmd.Parameters.Add(parmeter6);
+
+                    con.Open();
+                    int i = cmd.ExecuteNonQuery();
+                    if (i > 0)
+                        Console.WriteLine("Record Inserted succedfully");
+                    else
+                        Console.WriteLine("Error occured in inserting the record");
+                    con.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+        public static void winningTeam()
+        {
+            String connectionstring = "Data Source=LAPTOP-1FO27VB7\\SQLEXPRESS;Initial Catalog=Football_League;Integrated Security=True;";
+            string query = "SELECT MatchID,WinningTeam FROM FootballLeague WHERE WinningTeam IS NOT NULL ;";
+            using(SqlConnection con = new SqlConnection(connectionstring))
+            {
+                SqlCommand cmd = new SqlCommand(query, con);
+                try
+                {
+                    con.Open();
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    Console.WriteLine("MatchID \tWinningTeam");
+                    Console.WriteLine("____________________________");
+                    while (reader.Read())
+                    {
+                        Console.WriteLine(" {0}   \t  {1}",
+                            reader[0], reader[1]);
+
+                    }
+                    reader.Close();
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine (ex.Message);
+                }
+            }
+        }
+        public static void matchPlayedJapan()
+        {
+            String connectionstring = "Data Source=LAPTOP-1FO27VB7\\SQLEXPRESS;Initial Catalog=Football_League;Integrated Security=True;";
+            string query = "SELECT * FROM FootballLeague WHERE TeamName1 = 'Japan' OR TeamName2 = 'Japan';";
+            using (SqlConnection con = new SqlConnection(connectionstring))
+            {
+                SqlCommand cmd = new SqlCommand(query, con);
+                try
+                {
+                    con.Open();
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        Console.WriteLine("{0}\t{1}\t\t{2}\t\t{3}\t{4}\t{5}",
+                            reader[0], reader[1], reader[2], reader[3], reader[4], reader[5]);
+
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }
+        public static void showData()
+        {
+            String connectionstring = "Data Source=LAPTOP-1FO27VB7\\SQLEXPRESS;Initial Catalog=Football_League;Integrated Security=True;";
+            string query = "SELECT * FROM FootballLeague;";
+            using (SqlConnection con = new SqlConnection(connectionstring))
+            {
+                SqlCommand cmd = new SqlCommand(query, con);
+                try
+                {
+                    con.Open();
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        Console.WriteLine("{0}\t{1}\t\t{2}\t\t{3}\t{4}\t{5}",
+                            reader[0], reader[1], reader[2], reader[3], reader[4], reader[5]);
+
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }
+    }
+}
+
+
+
+SQL SSMS
+
+--Football League Database
+CREATE DATABASE Football_League;
+
+--FootballLeague Table
+CREATE TABLE FootballLeague(MatchID INT IDENTITY,
+TeamName1 VARCHAR(50) NOT NULL,
+TeamName2 VARCHAR(50) NOT NULL,
+Status VARCHAR(5) NOT NULL,
+WinningTeam VARCHAR(50) NULL,
+Points INT NOT NULL,
+CONSTRAINT PK_MatchID PRIMARY KEY(MatchID));
+
+SELECT * from FootballLeague;
+DELETE FROM FootballLeague;
+DROP TABLE FootballLeague;
+
+--Stored Procedure for inserting value in the table
+CREATE OR ALTER PROCEDURE sp_InsertRecord(@id INT,@team1 VARCHAR(50),@team2 VARCHAR(50),@status VARCHAR(5),@winningteam VARCHAR(50),@points INT)
+AS
+BEGIN
+     SET IDENTITY_INSERT FootballLeague ON;
+     INSERT INTO FootballLeague(MatchID,TeamName1,TeamName2,Status,WinningTeam,Points) VALUES (@id,@team1,@team2,@status,@winningteam,@points);
+END
+EXECUTE sp_InsertRecord 1001,'Italy','France','Win','France',4;
+
+SELECT MatchID,WinningTeam FROM FootballLeague WHERE WinningTeam IS NOT NULL ;
+
+SELECT * FROM FootballLeague WHERE TeamName1 = 'Japan' OR TeamName2 = 'Japan';
